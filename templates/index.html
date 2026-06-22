@@ -1,779 +1,360 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ring Visual Search - AI-Powered Jewelry Search</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ring Searcher</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #ffffff;
-        }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f5;
+  color: #222;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+header {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-        .header {
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid #333;
-        }
+header h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: 0.05em; }
+header span { font-size: 0.8rem; color: #888; }
 
-        .header h1 {
-            font-size: 2.2em;
-            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-  color: transparent;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
+.container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
 
-        .header p {
-            color: #999;
-            font-size: 1em;
-        }
+/* Upload box */
+.upload-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  margin-bottom: 32px;
+}
 
-        .stats {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-        }
+.upload-box h2 { font-size: 1rem; margin-bottom: 16px; color: #444; font-weight: 500; }
 
-        .stat-box {
-            flex: 1;
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-            padding: 12px;
-            border-radius: 10px;
-            color: white;
-            text-align: center;
-            border: 1px solid #444;
-        }
+.drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 48px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  position: relative;
+}
 
-        .stat-box .number {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #fff;
-        }
+.drop-area:hover, .drop-area.over { border-color: #c9a84c; background: #fffdf5; }
 
-        .stat-box .label {
-            font-size: 0.85em;
-            color: #aaa;
-        }
+.drop-area input {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+}
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 25px;
-        }
+.drop-area p { color: #888; font-size: 0.9rem; margin-top: 8px; }
 
-        .upload-section {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid #333;
-        }
+#preview-section { display: none; margin-top: 16px; text-align: center; }
+#preview-section img { max-height: 160px; border-radius: 8px; border: 1px solid #e0e0e0; }
+#preview-section p { margin-top: 6px; font-size: 0.78rem; color: #999; }
 
-        .upload-box {
-            border: 2px dashed #555;
-            border-radius: 12px;
-            padding: 35px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #1a1a1a;
-        }
+.row { display: flex; gap: 12px; margin-top: 16px; align-items: flex-end; flex-wrap: wrap; }
 
-        .upload-box:hover {
-            border-color: #888;
-            background: #222;
-        }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
+.field input, .field select {
+  border: 1px solid #ddd; border-radius: 6px;
+  padding: 8px 10px; font-size: 0.88rem;
+  outline: none; width: 110px;
+}
+.field input:focus { border-color: #c9a84c; }
 
-        .upload-box.dragover {
-            border-color: #fff;
-            background: #2a2a2a;
-            transform: scale(1.02);
-        }
+button.search-btn {
+  background: #c9a84c; color: #1a1a1a;
+  border: none; border-radius: 6px;
+  padding: 9px 28px; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+button.search-btn:hover { background: #b8922e; }
+button.search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .upload-icon {
-            font-size: 3.5em;
-            margin-bottom: 15px;
-        }
+/* Loading */
+#loading { display: none; text-align: center; padding: 32px; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #e0e0e0; border-top-color: #c9a84c;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading p { color: #888; font-size: 0.9rem; }
 
-        .uploaded-preview {
-            margin-top: 15px;
-            display: none;
-        }
+/* Results */
+#results { display: none; }
+.results-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.results-header h2 { font-size: 1.1rem; }
+.results-header small { color: #888; font-size: 0.8rem; }
 
-        .uploaded-preview img {
-            width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            border: 1px solid #333;
-        }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
 
-        .search-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            background: linear-gradient(135deg, #000 0%, #333 100%);
-            color: white;
-            border: 1px solid #555;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+.card {
+  background: #fff; border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden; cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.12); transform: translateY(-2px); }
 
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
-            border-color: #888;
-        }
+.card .img { aspect-ratio: 1; background: #fafafa; display: flex; align-items: center; justify-content: center; padding: 8px; }
+.card img { width: 100%; height: 100%; object-fit: contain; }
 
-        .search-btn:disabled {
-            background: #2a2a2a;
-            cursor: not-allowed;
-            transform: none;
-            border-color: #333;
-        }
+.card .info { padding: 10px 12px; border-top: 1px solid #f0f0f0; }
+.card .pct { font-size: 1rem; font-weight: 700; color: #c9a84c; }
+.card .bar-wrap { height: 3px; background: #f0f0f0; border-radius: 2px; margin: 4px 0; }
+.card .bar { height: 100%; background: #c9a84c; border-radius: 2px; }
+.card .fname { font-size: 0.7rem; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .variants { font-size: 0.68rem; color: #bbb; margin-top: 2px; }
 
-        .results-section {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid #333;
-        }
+/* Admin */
+.admin { text-align: right; margin-bottom: 12px; }
+.admin button {
+  background: none; border: 1px solid #ddd; border-radius: 6px;
+  padding: 7px 16px; font-size: 0.8rem; color: #888; cursor: pointer;
+}
+.admin button:hover { border-color: #c9a84c; color: #555; }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .result-card {
-            background: #1a1a1a;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s;
-            cursor: pointer;
-            border: 1px solid #333;
-        }
-
-        .result-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
-            border-color: #666;
-        }
-
-        .result-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background: #0a0a0a;
-        }
-
-        .result-info {
-            padding: 12px;
-        }
-
-        .match-percentage {
-            font-size: 1.3em;
-            font-weight: bold;
-            background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-  color: transparent;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .result-filename {
-            color: #888;
-            font-size: 0.8em;
-            margin-top: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .customize-btn {
-            width: 100%;
-            padding: 8px;
-            margin-top: 8px;
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-            color: white;
-            border: 1px solid #444;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            font-size: 0.85em;
-        }
-
-        .customize-btn:hover {
-            background: linear-gradient(135deg, #333 0%, #222 100%);
-            border-color: #666;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 35px;
-            display: none;
-        }
-
-        .loading-spinner {
-            border: 4px solid #333;
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 50px 15px;
-            color: #666;
-        }
-
-        .empty-state-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
-            opacity: 0.3;
-        }
-
-        .rebuild-btn {
-            padding: 8px 16px;
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 8px;
-            transition: all 0.3s;
-        }
-
-        .rebuild-btn:hover {
-            background: #2a2a2a;
-            border-color: #666;
-        }
-
-        .processing-steps {
-            background: #0a0a0a;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            display: none;
-            border: 1px solid #333;
-        }
-
-        .processing-step {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin: 4px 0;
-            border-radius: 6px;
-            background: #1a1a1a;
-        }
-
-        .step-icon {
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            color: white;
-            font-weight: bold;
-            font-size: 0.8em;
-        }
-
-        .step-icon.complete {
-            background: #4a4a4a;
-        }
-
-        .step-icon.active {
-            background: #666;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: #1a1a1a;
-            border-radius: 15px;
-            padding: 25px;
-            max-width: 550px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            border: 1px solid #333;
-        }
-
-        .modal-close {
-            float: right;
-            font-size: 1.8em;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .modal-close:hover {
-            color: #fff;
-        }
-
-        .stone-option {
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #333;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #0a0a0a;
-        }
-
-        .stone-option:hover {
-            border-color: #666;
-            background: #1a1a1a;
-        }
-
-        .duplicate-badge {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 6px 8px;
-            margin-top: 6px;
-            font-size: 0.75em;
-        }
-
-        .duplicate-badge small {
-            color: #aaa;
-            font-weight: bold;
-        }
-
-        .quality-badge {
-            display: inline-block;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.7em;
-            color: #aaa;
-            margin-top: 4px;
-        }
-
-        h2, h3 {
-            color: #fff;
-        }
-
-        p {
-            color: #aaa;
-        }
-
-        @media (max-width: 968px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                flex-direction: column;
-            }
-
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+/* Customise modal */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 12px;
+  padding: 28px; max-width: 480px; width: 90%;
+  position: relative; max-height: 85vh; overflow-y: auto;
+}
+.modal h3 { margin-bottom: 16px; font-size: 1.1rem; }
+.modal-close {
+  position: absolute; top: 14px; right: 18px;
+  background: none; border: none; font-size: 1.3rem;
+  cursor: pointer; color: #888;
+}
+.opt-group { margin-bottom: 16px; }
+.opt-group label { display: block; font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  padding: 5px 12px; border: 1px solid #ddd; border-radius: 20px;
+  font-size: 0.78rem; cursor: pointer; transition: border-color 0.15s;
+}
+.pill:hover { border-color: #c9a84c; }
+.pill.active { border-color: #c9a84c; background: #fffdf0; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>💍 Ring Visual Search</h1>
-            <p>AI-Powered Visual Search for Jewelry E-Commerce</p>
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="number" id="totalRings">0</div>
-                    <div class="label">Catalog Rings</div>
-                </div>
-                <div class="stat-box">
-                    <div class="number" id="indexedRings">0</div>
-                    <div class="label">Indexed Rings</div>
-                </div>
-                <div class="stat-box">
-                    <div class="number">AI</div>
-                    <div class="label">Powered Search</div>
-                </div>
-            </div>
-            
-            <button class="rebuild-btn" onclick="rebuildIndex()">🔄 Rebuild Index</button>
-        </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Upload Section -->
-            <div class="upload-section">
-                <h2>📸 Upload Ring Image</h2>
-                <p style="color: #666; margin: 10px 0;">Upload a ring image to find similar designs</p>
-                
-                <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
-                    <div class="upload-icon">📤</div>
-                    <h3>Click or Drag to Upload</h3>
-                    <p>Supported: JPG, PNG, WebP</p>
-                </div>
-                
-                <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
-                
-                <div class="uploaded-preview" id="uploadedPreview">
-                    <h3>Uploaded Image:</h3>
-                    <img id="previewImage" src="" alt="Preview">
-                </div>
-                
-                <div class="processing-steps" id="processingSteps">
-                    <h3>Processing Steps:</h3>
-                    <div class="processing-step">
-                        <div class="step-icon" id="step1">1</div>
-                        <div>Noise Removal</div>
-                    </div>
-                    <div class="processing-step">
-                        <div class="step-icon" id="step2">2</div>
-                        <div>Orientation Normalization</div>
-                    </div>
-                    <div class="processing-step">
-                        <div class="step-icon" id="step3">3</div>
-                        <div>Quality Enhancement</div>
-                    </div>
-                    <div class="processing-step">
-                        <div class="step-icon" id="step4">4</div>
-                        <div>Feature Extraction</div>
-                    </div>
-                    <div class="processing-step">
-                        <div class="step-icon" id="step5">5</div>
-                        <div>Catalog Matching</div>
-                    </div>
-                </div>
-                
-                <button class="search-btn" id="searchBtn" onclick="performSearch()" disabled>
-                    🔍 Search Similar Designs
-                </button>
-            </div>
+<header>
+  <h1>💍 Ring Searcher</h1>
+  <span id="catalog-info">Loading…</span>
+</header>
 
-            <!-- Results Section -->
-            <div class="results-section">
-                <h2>🎯 Search Results</h2>
-                
-                <div class="loading" id="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Analyzing image and searching catalog...</p>
-                </div>
-                
-                <div class="empty-state" id="emptyState">
-                    <div class="empty-state-icon">🔍</div>
-                    <h3>No Results Yet</h3>
-                    <p>Upload a ring image to find similar designs</p>
-                </div>
-                
-                <div class="results-grid" id="resultsGrid"></div>
-            </div>
-        </div>
+<div class="container">
+
+  <div class="upload-box">
+    <h2>Upload a ring image to find similar designs</h2>
+
+    <div class="drop-area" id="drop-area">
+      <input type="file" id="file-input" accept="image/*"/>
+      <div style="font-size:2rem;">📷</div>
+      <p>Click or drag & drop your ring photo here</p>
+      <p style="font-size:0.75rem;margin-top:4px;">JPG · PNG · WEBP · BMP</p>
     </div>
 
-    <!-- Customization Modal -->
-    <div class="modal" id="customModal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal()">&times;</span>
-            <h2>🎨 Customize Your Ring</h2>
-            <div id="customOptions"></div>
-        </div>
+    <div id="preview-section">
+      <img id="preview-img" src="" alt="preview"/>
+      <p id="preview-name"></p>
     </div>
 
-    <script>
-        let uploadedFile = null;
+    <div class="row">
+      <div class="field">
+        <label>Show results</label>
+        <input type="number" id="top-k" value="10" min="1" max="50"/>
+      </div>
+      <div class="field">
+        <label>Dedup %</label>
+        <input type="number" id="threshold" value="85" min="50" max="99"/>
+      </div>
+      <button class="search-btn" id="search-btn" disabled>Search</button>
+    </div>
+  </div>
 
-        // Load catalog info on page load
-        window.addEventListener('load', loadCatalogInfo);
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Finding similar rings…</p>
+  </div>
 
-        function loadCatalogInfo() {
-            fetch('/catalog-info')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('totalRings').textContent = data.total_rings;
-                    document.getElementById('indexedRings').textContent = data.indexed_rings;
-                });
-        }
+  <div class="admin">
+    <button onclick="rebuild()">⟳ Rebuild Index</button>
+  </div>
 
-        // Drag and drop functionality
-        const uploadBox = document.getElementById('uploadBox');
+  <div id="results">
+    <div class="results-header">
+      <h2>Similar Rings</h2>
+      <small id="results-info"></small>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
 
-        uploadBox.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadBox.classList.add('dragover');
-        });
+</div>
 
-        uploadBox.addEventListener('dragleave', () => {
-            uploadBox.classList.remove('dragover');
-        });
+<!-- Customise modal -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3>Customise Ring</h3>
+    <div id="modal-content"></div>
+  </div>
+</div>
 
-        uploadBox.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadBox.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
-        });
+<script>
+// catalog info
+fetch('/catalog-info').then(r=>r.json()).then(d=>{
+  document.getElementById('catalog-info').textContent = `${d.indexed} rings indexed`;
+});
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                handleFile(file);
-            }
-        }
+// drag & drop
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('file-input');
+const searchBtn = document.getElementById('search-btn');
+let file = null;
 
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('Please upload an image file');
-                return;
-            }
+dropArea.addEventListener('dragover', e=>{ e.preventDefault(); dropArea.classList.add('over'); });
+dropArea.addEventListener('dragleave', ()=>dropArea.classList.remove('over'));
+dropArea.addEventListener('drop', e=>{ e.preventDefault(); dropArea.classList.remove('over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', ()=>{ if(fileInput.files[0]) setFile(fileInput.files[0]); });
 
-            uploadedFile = file;
+function setFile(f) {
+  file = f;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('preview-name').textContent = f.name;
+    document.getElementById('preview-section').style.display = 'block';
+  };
+  reader.readAsDataURL(f);
+  searchBtn.disabled = false;
+}
 
-            // Show preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('previewImage').src = e.target.result;
-                document.getElementById('uploadedPreview').style.display = 'block';
-                document.getElementById('searchBtn').disabled = false;
-            };
-            reader.readAsDataURL(file);
-        }
+// search
+searchBtn.addEventListener('click', async () => {
+  if (!file) return;
+  searchBtn.disabled = true;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
 
-        async function performSearch() {
-            if (!uploadedFile) {
-                alert('Please upload an image first');
-                return;
-            }
+  const form = new FormData();
+  form.append('file', file);
+  form.append('top_k', document.getElementById('top-k').value);
+  form.append('threshold', document.getElementById('threshold').value);
 
-            // Show loading
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('resultsGrid').innerHTML = '';
-            document.getElementById('processingSteps').style.display = 'block';
+  try {
+    const res  = await fetch('/upload', {method:'POST', body:form});
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    if (data.error) { alert(data.error); searchBtn.disabled=false; return; }
+    renderResults(data);
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    alert('Something went wrong. Check the server log.');
+    searchBtn.disabled = false;
+  }
+});
 
-            // Animate processing steps
-            animateProcessingSteps();
+function renderResults(data) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  document.getElementById('results-info').textContent =
+    `${data.matches.length} unique designs from ${data.total} indexed rings`;
 
-            // Prepare form data
-            const formData = new FormData();
-            formData.append('file', uploadedFile);
-            formData.append('top_k', 10);
+  if (!data.matches.length) {
+    grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">No matches found. Add more rings to catalog/.</p>';
+  }
 
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+  data.matches.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="img"><img src="${m.image_url}" loading="lazy"/></div>
+      <div class="info">
+        <div class="pct">${m.similarity}%</div>
+        <div class="bar-wrap"><div class="bar" style="width:${Math.min(m.similarity,100)}%"></div></div>
+        <div class="fname">${m.filename}</div>
+        ${m.variants > 1 ? `<div class="variants">${m.variants} variants merged</div>` : ''}
+      </div>`;
+    card.addEventListener('click', () => openCustomise(m.index));
+    grid.appendChild(card);
+  });
 
-                const data = await response.json();
+  document.getElementById('results').style.display = 'block';
+  searchBtn.disabled = false;
+}
 
-                if (data.success) {
-                    displayResults(data.matches);
-                } else {
-                    alert('Error: ' + (data.error || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('Error performing search: ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-                setTimeout(() => {
-                    document.getElementById('processingSteps').style.display = 'none';
-                    resetProcessingSteps();
-                }, 1000);
-            }
-        }
+// customise modal
+async function openCustomise(idx) {
+  const res  = await fetch(`/customize/${idx}`);
+  const opts = await res.json();
+  const body = document.getElementById('modal-content');
+  body.innerHTML = '';
 
-        function animateProcessingSteps() {
-            const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
-            
-            steps.forEach((stepId, index) => {
-                setTimeout(() => {
-                    const step = document.getElementById(stepId);
-                    step.classList.add('active');
-                    
-                    setTimeout(() => {
-                        step.classList.remove('active');
-                        step.classList.add('complete');
-                        step.textContent = '✓';
-                    }, 500);
-                }, index * 500);
-            });
-        }
+  [
+    ['Stone', opts.stone_types],
+    ['Size',  opts.stone_sizes],
+    ['Position', opts.positions],
+  ].forEach(([label, items]) => {
+    const g = document.createElement('div');
+    g.className = 'opt-group';
+    g.innerHTML = `<label>${label}</label><div class="pills">${items.map(s=>`<span class="pill">${s}</span>`).join('')}</div>`;
+    g.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => {
+      g.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+    }));
+    body.appendChild(g);
+  });
 
-        function resetProcessingSteps() {
-            const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
-            steps.forEach((stepId, index) => {
-                const step = document.getElementById(stepId);
-                step.classList.remove('active', 'complete');
-                step.textContent = (index + 1).toString();
-            });
-        }
+  document.getElementById('modal-overlay').classList.add('open');
+}
 
-        function displayResults(matches) {
-            const grid = document.getElementById('resultsGrid');
-            grid.innerHTML = '';
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
 
-            if (matches.length === 0) {
-                document.getElementById('emptyState').style.display = 'block';
-                return;
-            }
-
-            matches.forEach((match, index) => {
-                const card = document.createElement('div');
-                card.className = 'result-card';
-                
-                // Build duplicate info HTML
-                let duplicateInfo = '';
-                if (match.duplicate_count && match.duplicate_count > 1) {
-                    duplicateInfo = `
-                        <div class="duplicate-badge">
-                            <small>🔗 ${match.duplicate_count} variants (best quality shown)</small>
-                        </div>
-                    `;
-                }
-                
-                // Build quality score HTML
-                let qualityInfo = '';
-                if (match.quality_score) {
-                    qualityInfo = `
-                        <div class="quality-badge">
-                            ⭐ Quality: ${match.quality_score.toFixed(1)}/10
-                        </div>
-                    `;
-                }
-                
-                card.innerHTML = `
-                    <img src="${match.image_url}" alt="Ring ${index + 1}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22><rect fill=%22%230a0a0a%22 width=%22180%22 height=%22180%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23666%22>No Image</text></svg>'">
-                    <div class="result-info">
-                        <div class="match-percentage">${match.similarity.toFixed(1)}% Match</div>
-                        <div class="result-filename">${match.filename}</div>
-                        ${qualityInfo}
-                        ${duplicateInfo}
-                        <button class="customize-btn" onclick="showCustomization(${match.index})">
-                            🎨 Customize Stones
-                        </button>
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
-
-        async function showCustomization(ringIndex) {
-            try {
-                const response = await fetch(`/customize/${ringIndex}`);
-                const options = await response.json();
-
-                const modalContent = `
-                    <h3>Base Design: ${options.base_design.filename}</h3>
-                    
-                    <h4 style="margin-top: 20px;">💎 Stone Types:</h4>
-                    ${options.stone_types.map(stone => `
-                        <div class="stone-option">
-                            <strong>${stone.name}</strong><br>
-                            <small>Color: ${stone.color} | Hardness: ${stone.hardness}</small>
-                        </div>
-                    `).join('')}
-                    
-                    <h4 style="margin-top: 20px;">📏 Available Sizes:</h4>
-                    <p>${options.stone_sizes.join(', ')}</p>
-                    
-                    <h4 style="margin-top: 20px;">📍 Positions:</h4>
-                    <p>${options.positions.join(', ')}</p>
-                `;
-
-                document.getElementById('customOptions').innerHTML = modalContent;
-                document.getElementById('customModal').style.display = 'flex';
-            } catch (error) {
-                alert('Error loading customization options: ' + error.message);
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('customModal').style.display = 'none';
-        }
-
-        async function rebuildIndex() {
-            if (!confirm('Rebuild catalog index? This will re-process all catalog images.')) {
-                return;
-            }
-
-            const btn = event.target;
-            btn.disabled = true;
-            btn.textContent = '🔄 Rebuilding...';
-
-            try {
-                const response = await fetch('/rebuild-index', { method: 'POST' });
-                const data = await response.json();
-
-                if (data.success) {
-                    alert(`Index rebuilt successfully! ${data.total_rings} rings indexed.`);
-                    loadCatalogInfo();
-                } else {
-                    alert('Error: ' + (data.error || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('Error rebuilding index: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '🔄 Rebuild Index';
-            }
-        }
-    </script>
+// rebuild
+async function rebuild() {
+  if (!confirm('Rebuild catalog index? This may take a minute.')) return;
+  const res = await fetch('/rebuild', {method:'POST'});
+  const d   = await res.json();
+  if (d.ok) {
+    alert(`Done! ${d.indexed} rings indexed.`);
+    document.getElementById('catalog-info').textContent = `${d.indexed} rings indexed`;
+  } else {
+    alert('Error: ' + d.error);
+  }
+}
+</script>
 </body>
 </html>
